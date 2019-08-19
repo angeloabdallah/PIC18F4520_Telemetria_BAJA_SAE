@@ -12,15 +12,21 @@ void interrupt (void) { if(PIR1.CCP1IF)
 {
 PIR1.CCP1IF = 0; // Limpa a flag para nova captura pulsos ++;
 }
-if (PIR2.CCP2IF){ PIR2.CCP2IF = 0;
+if (PIR2.CCP2IF){
+PIR2.CCP2IF = 0;
 ciclos++;
 }
 else if(INTCON.TMR0IF){
-PIE2.CCP2IE = 0; // Desabilita interrupção - periféricos CCP2 PIE1.CCP1IE = 0; // Desabilita interrupção - periféricos CCP1 TMR0H = 0x67;
+PIE2.CCP2IE = 0; // Desabilita interrupção - periféricos CCP2 
+PIE1.CCP1IE = 0; // Desabilita interrupção - periféricos CCP1 
+TMR0H = 0x67;
 TMR0L = 0x6A;
-sd_card++; timer++; uart++;
+sd_card++; 
+timer++; 
+uart++;
 INTCON.TMR0IF = 0; //Zera flag timer 1
-PIE2.CCP2IE = 1; // Habilita interrupção - periféricos CCP2 PIE1.CCP1IE = 1; // Habilita interrupção - periféricos CCP1
+PIE2.CCP2IE = 1; // Habilita interrupção - periféricos CCP2
+PIE1.CCP1IE = 1; // Habilita interrupção - periféricos CCP1
 }
 }
 void send_preamble(){
@@ -28,37 +34,52 @@ int cha; for(cha=0;cha<5;cha++){ UART1_Write(0xF8);
 }
 UART1_Write(0xFA);
 }
-void start_byte(){ UART1_Write('(');
+void start_byte(){
+UART1_Write('(');
 }
-void stop_byte(){ UART1_Write(')');
+void stop_byte(){
+UART1_Write(')');
 }
 void main() {
 TRISC = 0b00000110;
 TRISA.RA0 = 1; // AN0 como entrada TRISB.RB0 = 0;
 TRISB.RB1 = 0;
-T3CON.T3CCP1=0; T3CON.T3CCP2=0;
-INTCON.GIE = 1; // Habilita chave geral das interrupções INTCON.PEIE = 1; // Habilita Interrupção dos periféricos
+T3CON.T3CCP1=0; 
+T3CON.T3CCP2=0;
+INTCON.GIE = 1; // Habilita chave geral das interrupções
+INTCON.PEIE = 1; // Habilita Interrupção dos periféricos
 PIE2.CCP2IE = 1;
 PIE1.CCP1IE = 1; // Habilita Interrupção do módulo CCP
-//T1CON = 0b10111001; // Liga TIMER1, prescaler 1:8, Clock interno T0CON = 0b10000110; // Liga TIMER1, prescaler 1:8, Clock interno
-CCP1CON = 0b00000101; // CCP1 em modulo CAPTURA e borda de SUBIDA CCP2CON = 0b00000101;
-//CCP1CON = 0b00000100; // CCP1 em modulo CAPTURA e borda de DESCIDA PIR1.CCP1IF = 0; // Limpa a flag para nova captura
-PIR2.CCP2IF = 0; // Limpa a flag para nova captura INTCON.TMR0IE = 1; // Habilita a interrupção para o Timer 0 INTCON.TMR0IF = 0; // Zera a flag do Timer 0 INTCON2.TMR0IP = 1; // Habilita prioridade para o Timer 0
+//T1CON = 0b10111001; // Liga TIMER1, prescaler 1:8, Clock interno 
+T0CON = 0b10000110; // Liga TIMER1, prescaler 1:8, Clock interno
+CCP1CON = 0b00000101; // CCP1 em modulo CAPTURA e borda de SUBIDA 
+CCP2CON = 0b00000101;
+//CCP1CON = 0b00000100; // CCP1 em modulo CAPTURA e borda de DESCIDA 
+PIR1.CCP1IF = 0; // Limpa a flag para nova captura
+PIR2.CCP2IF = 0; // Limpa a flag para nova captura 
+INTCON.TMR0IE = 1; // Habilita a interrupção para o Timer 0 
+INTCON.TMR0IF = 0; // Zera a flag do Timer 0 
+INTCON2.TMR0IP = 1; // Habilita prioridade para o Timer 0
 // T = Tcy * Prescaler * (65536 - x)
 // 1s = 0,2*10^-6 * 128 * (65536 – x)
 // x = 676A TMR0H = 0x67; TMR0L = 0x6A;
-T0CON = 0b10010110; // Habilita Timer 0, 16 bits, borda de subida, prescaler de 128 INTCON.TMR0IE = 1; // Habilita a interrupção para o Timer 0
-INTCON.TMR0IF = 0; // Zera a flag do Timer 0 INTCON2.TMR0IP = 1; // Habilita prioridade para o Timer 0
-RCON.IPEN= 1; // Habilita prioridades de interrupção INTCON.GIEH= 1; // Habilita interrupção de alta prioridade INTCON.GIEL= 1; // Habilita interrupção de baixa prioridade
+T0CON = 0b10010110; // Habilita Timer 0, 16 bits, borda de subida, prescaler de 128 
+INTCON.TMR0IE = 1; // Habilita a interrupção para o Timer 0
+INTCON.TMR0IF = 0; // Zera a flag do Timer 0 
+INTCON2.TMR0IP = 1; // Habilita prioridade para o Timer 0
+RCON.IPEN= 1; // Habilita prioridades de interrupção
+INTCON.GIEH= 1; // Habilita interrupção de alta prioridade 
+INTCON.GIEL= 1; // Habilita interrupção de baixa prioridade
 // Configuração do conversor A/D
 CMCON = 0x07; // desabilita comparadores
 ADCON0 = 0b00000011; // Seleciona AN0 e habilita A/D
-ADCON1 = 0b00001110; //Habilita AN0 como analógico, Vref+ =Vcc e Vref-=Vss ADCON2 = 0b10010101; //Alinhado a direita, TACQ = 4TAD TAD = FOSC/16 Delay_ms(100); // 0,1s
+ADCON1 = 0b00001110; //Habilita AN0 como analógico, Vref+ =Vcc e Vref-=Vss
+ADCON2 = 0b10010101; //Alinhado a direita, TACQ = 4TAD TAD = FOSC/16 
+Delay_ms(100); // 0,1s
 // Inicializando a comunicação serial UART
 UART1_Init(1200);
 Delay_ms(100); // Para estabilizar
-SPI1_Init_Advanced(_SPI_MASTER_OSC_DIV16, _SPI_DATA_SAMPLE_MIDDLE,
-_SPI_CLK_IDLE_LOW, _SPI_LOW_2_HIGH);
+SPI1_Init_Advanced(_SPI_MASTER_OSC_DIV16, _SPI_DATA_SAMPLE_MIDDLE,_SPI_CLK_IDLE_LOW, _SPI_LOW_2_HIGH);
 Delay_us(10);
 error = MMC_Fat_Init(); while(error == 1)
 {
@@ -82,10 +103,24 @@ timer = 0;
 total = pulsos *(60/3) ; tot= ciclos * (60/8);
 Kmh=(tot*1.627847*60)/1000;
 Kmh_disp = Kmh;
-m_Kmh = Kmh_disp/1000; Kmh_disp = Kmh_disp%1000; c_Kmh = Kmh_disp/100; Kmh_disp = Kmh_disp%100; d_Kmh = Kmh_disp/10; u_Kmh = Kmh_disp%10;
-m1_total = tot/1000; tot = tot%1000; c1_total = tot/100; tot = tot%100; d1_total = tot/10; u1_total = tot%10;
+m_Kmh = Kmh_disp/1000;
+Kmh_disp = Kmh_disp%1000;
+c_Kmh = Kmh_disp/100; 
+Kmh_disp = Kmh_disp%100;
+d_Kmh = Kmh_disp/10; 
+u_Kmh = Kmh_disp%10;
+m1_total = tot/1000;
+tot = tot%1000;
+c1_total = tot/100;
+tot = tot%100;
+d1_total = tot/10;
+u1_total = tot%10;
 m_total = total/1000;
-total = total%1000; c_total = total/100; total = total%100; d_total = total/10; u_total = total%10;
+total = total%1000;
+c_total = total/100; 
+total = total%100;
+d_total = total/10;
+u_total = total%10;
 ciclos=0; pulsos = 0;
 }
 else if (timer > 1)
@@ -96,9 +131,20 @@ if(uart==3){ uart =0;
 while(UART1_Tx_Idle()==1){ send_preamble(); start_byte();
 UART1_Write(mil + 48);
 UART1_Write(cem + 48);
-UART1_Write(dez + 48); UART1_Write(44); UART1_Write(un+48); UART1_Write(d_kmh + 48);
-UART1_Write(u_kmh + 48); UART1_Write(m_total+48); UART1_Write(c_total+48); UART1_Write(d_total+48); UART1_Write(u_total+48); UART1_Write('\n'); UART1_Write('\r');
-stop_byte(); send_preamble();} Delay_ms(100);
+UART1_Write(dez + 48);
+UART1_Write(44); 
+UART1_Write(un+48);
+UART1_Write(d_kmh + 48);
+UART1_Write(u_kmh + 48);
+UART1_Write(m_total+48);
+UART1_Write(c_total+48);
+UART1_Write(d_total+48);
+UART1_Write(u_total+48); 
+UART1_Write('\n');
+UART1_Write('\r');
+stop_byte();
+send_preamble();}
+Delay_ms(100);
 }
 else if(uart>3){
 uart =0;
@@ -139,7 +185,10 @@ Temperatura[29] = c_total+48;
 Temperatura[30] = d_total+48;
 Temperatura[31] = u_total+48;
 Temperatura[32] = '\r';
-Temperatura[33]='\n'; Mmc_Fat_Append(); Mmc_Fat_Write(Temperatura,36); Delay_ms(100);
+Temperatura[33]='\n';
+Mmc_Fat_Append(); 
+Mmc_Fat_Write(Temperatura,36); 
+Delay_ms(100);
 PORTB.RB1 = 0;
 }
 else if(sd_card>10){ sd_card=0;}
