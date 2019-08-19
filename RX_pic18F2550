@@ -1,0 +1,64 @@
+#define red_led RA0_bit 
+unsigned char ch[15], x; int i, j;
+void interrupt(void){
+if(UART1_Data_Ready()==1)
+{
+x =UART1_Read();
+if(x=='(')
+{
+j=1; i=0;
+}
+else if(j==1 && x==')'){ i=0;
+j=0;
+}
+else if(j==1){
+ch[i]= x; i++;;
+}
+}
+}
+void main() { TRISA=0; TRISC.RC6 = 0;
+TRISC.RC7 = 1; ADCON1 = 0x0F;
+CMCON = 7; // Disabilita os comparadors
+PIR1.RCIF= 0 ;//habilita interrupção
+PIE1.RCIE = 1 ;//zera flag
+RCON.IPEN= 0; // Interrupções sem prioridade
+INTCON.PEIE = 1; // Habilita Interrupção dos periféricos 
+INTCON.GIE = 1; // Habilita chave geral das interrupções
+UART1_Init(1200); // Inicializa UART delay_ms(10);
+while(1){
+if(i>0){
+UART1_Write('T'); 
+UART1_Write('E');
+UART1_Write('M');
+UART1_Write('P');
+UART1_Write(':');
+UART1_Write(ch[0]);
+UART1_Write(ch[1]);
+UART1_Write(ch[2]); 
+UART1_Write(ch[3]); 
+UART1_Write(ch[4]); 
+UART1_Write(' '); 
+UART1_Write('V');
+UART1_Write('E'); 
+UART1_Write('L'); 
+UART1_Write(':');
+UART1_Write(ch[5]);
+UART1_Write(ch[6]);
+UART1_Write('k');
+UART1_Write('m');
+UART1_Write('/');
+UART1_Write('h');
+UART1_Write(' ');
+UART1_Write('R');
+UART1_Write('P');
+UART1_Write('M');
+UART1_Write(':');
+UART1_Write(ch[7]);
+UART1_Write(ch[8]); 
+UART1_Write(ch[9]);
+UART1_Write(ch[10]);
+UART1_Write(' '); 
+UART1_Write('\n'); 
+UART1_Write('\r'); i=0;
+}
+}}
